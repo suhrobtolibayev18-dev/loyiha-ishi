@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SecureVault</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+:root {
+  --bg: #050508;
+  --s1: #0d0d14;
+  --s2: #14141f;
+  --s3: #1c1c2e;
+  --border: #252535;
+  --border2: #32324a;
+  --a1: #7c6ff7;
+  --a2: #f06292;
+  --a3: #26d0a0;
+  --a4: #f9a825;
+  --red: #ef5350;
+  --text: #e2e2f0;
+  --muted: #5a5a78;
+  --muted2: #3a3a55;
+  --white: #ffffff;
+  --admin: #f9a825;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Space Grotesk', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* BG */
+.bg-noise {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+.glow-top { position: fixed; top: -200px; left: 50%; transform: translateX(-50%); width: 600px; height: 400px; background: radial-gradient(ellipse, rgba(124,111,247,0.12) 0%, transparent 70%); pointer-events: none; z-index: 0; }
+
+/* PAGES */
+.page { display: none; min-height: 100vh; position: relative; z-index: 1; }
+.page.active { display: flex; flex-direction: column; }
+.page-center { align-items: center; justify-content: center; padding: 1.5rem; }
+
+/* CARD */
+.card {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2.2rem;
+  width: 100%; max-width: 420px;
+  box-shadow: 0 0 0 1px rgba(124,111,247,0.05), 0 30px 60px rgba(0,0,0,0.6);
+  animation: slideUp 0.4s cubic-bezier(.16,1,.3,1);
+}
+@keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+@keyframes fadeIn  { from { opacity:0; } to { opacity:1; } }
+
+/* LOGO */
+.logo {
+  display: flex; align-items: center; gap: 0.7rem; margin-bottom: 2rem;
+  font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em;
+}
+.logo-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--a1), var(--a2));
+  display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+}
+.logo-text { background: linear-gradient(90deg,var(--a1),var(--a2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+
+/* LANDING */
+#page-landing { align-items: center; justify-content: center; text-align: center; padding: 2rem; }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.35rem 0.9rem; border-radius: 100px;
+  border: 1px solid rgba(124,111,247,0.3); background: rgba(124,111,247,0.08);
+  font-size: 0.78rem; color: var(--a1); margin-bottom: 1.5rem;
+  font-family: 'JetBrains Mono', monospace;
+}
+.hero-title {
+  font-size: clamp(2.2rem,6vw,4rem); font-weight: 700;
+  letter-spacing: -0.04em; line-height: 1.1; margin-bottom: 1rem;
+}
+.hero-title span { background: linear-gradient(135deg,var(--a1),var(--a2),var(--a3)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.hero-sub { color: var(--muted); font-size: 1rem; max-width: 380px; margin: 0 auto 2.5rem; line-height: 1.6; }
+.hero-btns { display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap; margin-bottom: 3rem; }
+
+.btn {
+  padding: 0.75rem 1.6rem; border-radius: 12px; border: none; cursor: pointer;
+  font-family: 'Space Grotesk', sans-serif; font-size: 0.9rem; font-weight: 600;
+  transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 0.4rem;
+}
+.btn-primary { background: linear-gradient(135deg,var(--a1),var(--a2)); color: white; box-shadow: 0 4px 20px rgba(124,111,247,0.35); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(124,111,247,0.5); }
+.btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border2); }
+.btn-outline:hover { border-color: var(--a1); color: var(--a1); background: rgba(124,111,247,0.05); }
+.btn-danger { background: rgba(239,83,80,0.15); color: var(--red); border: 1px solid rgba(239,83,80,0.3); }
+.btn-danger:hover { background: rgba(239,83,80,0.25); }
+.btn-admin { background: rgba(249,168,37,0.15); color: var(--admin); border: 1px solid rgba(249,168,37,0.3); }
+.btn-admin:hover { background: rgba(249,168,37,0.25); }
+.btn-sm { padding: 0.45rem 0.9rem; font-size: 0.8rem; border-radius: 8px; }
+.btn-full { width: 100%; justify-content: center; }
+
+.feature-pills { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; }
+.pill {
+  display: flex; align-items: center; gap: 0.4rem;
+  padding: 0.4rem 0.85rem; border-radius: 100px;
+  border: 1px solid var(--border); background: var(--s1);
+  font-size: 0.8rem; color: var(--muted);
+}
+.admin-entry {
+  margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border);
+  text-align: center;
+}
+.admin-link { color: var(--muted); font-size: 0.8rem; cursor: pointer; text-decoration: none; }
+.admin-link:hover { color: var(--admin); }
+
+/* FORM */
+.form-group { margin-bottom: 1.1rem; }
+.label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--muted); margin-bottom: 0.45rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.input {
+  width: 100%; padding: 0.75rem 1rem; border-radius: 11px;
+  background: var(--s2); border: 1px solid var(--border);
+  color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem;
+  outline: none; transition: all 0.2s;
+}
+.input:focus { border-color: var(--a1); box-shadow: 0 0 0 3px rgba(124,111,247,0.12); }
+.input::placeholder { color: var(--muted2); }
+
+.strength-wrap { margin-top: 0.4rem; display: flex; gap: 3px; }
+.strength-seg { flex: 1; height: 3px; border-radius: 2px; background: var(--border); transition: background 0.3s; }
+
+/* ALERT */
+.alert { padding: 0.7rem 0.9rem; border-radius: 10px; font-size: 0.85rem; margin-bottom: 1rem; display: none; }
+.alert.err  { background: rgba(239,83,80,0.1);  border: 1px solid rgba(239,83,80,0.3);  color: var(--red);  display: block; }
+.alert.ok   { background: rgba(38,208,160,0.1); border: 1px solid rgba(38,208,160,0.3); color: var(--a3);  display: block; }
+.alert.info { background: rgba(124,111,247,0.1);border: 1px solid rgba(124,111,247,0.3);color: var(--a1);  display: block; }
+
+/* DIVIDER */
+.divider { text-align:center; color:var(--muted); font-size:0.78rem; margin:0.8rem 0; position:relative; }
+.divider::before,.divider::after { content:''; position:absolute; top:50%; width:42%; height:1px; background:var(--border); }
+.divider::before{left:0} .divider::after{right:0}
+
+/* AUTH LINKS */
+.auth-link { text-align: center; margin-top: 1.2rem; font-size: 0.88rem; color: var(--muted); }
+.auth-link a { color: var(--a1); cursor: pointer; }
+.auth-link a:hover { text-decoration: underline; }
+.back-btn { background:none; border:none; color:var(--muted); cursor:pointer; font-family:inherit; font-size:0.85rem; margin-bottom:1.2rem; display:inline-flex; align-items:center; gap:0.3rem; transition:color 0.2s; }
+.back-btn:hover { color:var(--a1); }
+
+.card-title { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 0.3rem; }
+.card-sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 1.8rem; }
+
+/* BIO BTN */
+.bio-btn {
+  width:100%; padding:0.72rem; border-radius:11px; cursor:pointer;
+  background:var(--s2); border:1px solid var(--border);
+  color:var(--muted); font-family:'Space Grotesk',sans-serif; font-size:0.88rem;
+  display:flex; align-items:center; justify-content:center; gap:0.5rem;
+  transition:all 0.2s; margin-bottom:1rem;
+}
+.bio-btn:hover:not(.disabled) { border-color:var(--a3); color:var(--a3); }
+.bio-btn.linked { border-color:var(--a3); color:var(--a3); background:rgba(38,208,160,0.05); }
+.bio-btn.disabled { opacity:0.35; cursor:not-allowed; }
+
+/* ===== VAULT ===== */
+#page-vault { animation: fadeIn 0.3s ease; }
+
+.vault-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 1.8rem; border-bottom: 1px solid var(--border);
+  background: rgba(13,13,20,0.8); backdrop-filter: blur(12px);
+  position: sticky; top: 0; z-index: 100;
+}
+.nav-logo { display:flex; align-items:center; gap:0.6rem; font-size:1rem; font-weight:700; }
+.nav-logo-icon { width:30px; height:30px; border-radius:8px; background:linear-gradient(135deg,var(--a1),var(--a2)); display:flex; align-items:center; justify-content:center; font-size:0.9rem; }
+.nav-logo-text { background:linear-gradient(90deg,var(--a1),var(--a2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+
+.nav-right { display:flex; align-items:center; gap:0.8rem; }
+.user-chip { display:flex; align-items:center; gap:0.5rem; padding:0.35rem 0.7rem; background:var(--s2); border:1px solid var(--border); border-radius:100px; font-size:0.82rem; }
+.user-avatar { width:24px; height:24px; border-radius:50%; background:linear-gradient(135deg,var(--a1),var(--a2)); display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:700; }
+.logout-btn { padding:0.38rem 0.85rem; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--muted); cursor:pointer; font-family:inherit; font-size:0.8rem; transition:all 0.2s; }
+.logout-btn:hover { border-color:var(--red); color:var(--red); }
+
+.vault-body { padding: 1.8rem; max-width: 1100px; margin: 0 auto; }
+
+.welcome-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.8rem; flex-wrap:wrap; gap:1rem; }
+.welcome-text h2 { font-size:1.5rem; font-weight:700; letter-spacing:-0.03em; }
+.welcome-text p { color:var(--muted); font-size:0.85rem; margin-top:0.2rem; }
+.badge { display:inline-flex; align-items:center; gap:0.3rem; padding:0.2rem 0.55rem; border-radius:6px; font-size:0.7rem; font-weight:600; }
+.badge-enc { background:rgba(124,111,247,0.15); color:var(--a1); border:1px solid rgba(124,111,247,0.25); }
+.badge-bio { background:rgba(38,208,160,0.12); color:var(--a3); border:1px solid rgba(38,208,160,0.25); }
+
+.stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:0.9rem; margin-bottom:1.8rem; }
+.stat-box { background:var(--s1); border:1px solid var(--border); border-radius:14px; padding:1rem 1.2rem; }
+.stat-lbl { font-size:0.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; margin-bottom:0.35rem; }
+.stat-val { font-family:'JetBrains Mono',monospace; font-size:1.7rem; font-weight:600; line-height:1; }
+
+.drop-zone {
+  border:2px dashed var(--border2); border-radius:16px; padding:2.2rem;
+  text-align:center; cursor:pointer; transition:all 0.3s; margin-bottom:1.5rem;
+  background:var(--s1);
+}
+.drop-zone:hover, .drop-zone.over { border-color:var(--a1); background:rgba(124,111,247,0.04); }
+.drop-icon { font-size:2rem; margin-bottom:0.6rem; }
+.drop-title { font-size:0.95rem; font-weight:600; margin-bottom:0.3rem; }
+.drop-sub { font-size:0.8rem; color:var(--muted); }
+#file-input { display:none; }
+
+.filter-row { display:flex; gap:0.5rem; margin-bottom:1.2rem; flex-wrap:wrap; }
+.ftag { padding:0.38rem 0.9rem; border-radius:100px; border:1px solid var(--border); background:var(--s1); color:var(--muted); font-size:0.82rem; cursor:pointer; transition:all 0.2s; }
+.ftag.on { background:var(--a1); border-color:var(--a1); color:white; }
+.ftag:hover:not(.on) { border-color:var(--a1); color:var(--a1); }
+
+.media-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:0.9rem; }
+.m-card {
+  background:var(--s1); border:1px solid var(--border); border-radius:14px;
+  overflow:hidden; cursor:pointer; transition:all 0.25s; position:relative;
+}
+.m-card:hover { transform:translateY(-3px); border-color:var(--a1); box-shadow:0 6px 24px rgba(124,111,247,0.18); }
+.m-thumb { width:100%; aspect-ratio:1; object-fit:cover; display:block; background:var(--s2); }
+.m-placeholder { width:100%; aspect-ratio:1; background:var(--s2); display:flex; align-items:center; justify-content:center; font-size:2rem; }
+.m-info { padding:0.6rem 0.7rem; }
+.m-name { font-size:0.78rem; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.m-meta { font-size:0.7rem; color:var(--muted); margin-top:0.15rem; }
+.m-del { position:absolute; top:0.45rem; right:0.45rem; width:26px; height:26px; border-radius:50%; background:rgba(239,83,80,0.85); border:none; cursor:pointer; display:none; align-items:center; justify-content:center; font-size:0.7rem; color:white; }
+.m-card:hover .m-del { display:flex; }
+
+.empty { text-align:center; padding:3rem 1rem; color:var(--muted); grid-column:1/-1; }
+.empty-ico { font-size:2.5rem; margin-bottom:0.7rem; opacity:0.4; }
+
+/* PROGRESS TOAST */
+.progress-toast {
+  display:none; position:fixed; bottom:1.5rem; right:1.5rem; z-index:500;
+  background:var(--s1); border:1px solid var(--border); border-radius:14px;
+  padding:1rem 1.2rem; min-width:240px;
+  box-shadow:0 8px 30px rgba(0,0,0,0.5);
+}
+.prog-row { display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:0.5rem; }
+.prog-bar { height:3px; background:var(--border); border-radius:2px; overflow:hidden; }
+.prog-fill { height:100%; background:linear-gradient(90deg,var(--a1),var(--a2)); transition:width 0.3s; }
+
+/* LIGHTBOX */
+.lightbox { display:none; position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,0.96); align-items:center; justify-content:center; padding:2rem; }
+.lightbox.open { display:flex; }
+.lb-close { position:fixed; top:1.2rem; right:1.2rem; width:38px; height:38px; border-radius:50%; cursor:pointer; background:var(--s2); border:1px solid var(--border); color:var(--text); font-size:1.1rem; display:flex; align-items:center; justify-content:center; }
+.lb-close:hover { background:var(--red); border-color:var(--red); }
+.lb-img { max-width:90vw; max-height:85vh; object-fit:contain; border-radius:10px; }
+.lb-vid { max-width:90vw; max-height:85vh; border-radius:10px; }
+
+/* LOCK */
+#page-locked { align-items:center; justify-content:center; padding:1.5rem; }
+
+/* ===== ADMIN ===== */
+#page-admin-login { align-items:center; justify-content:center; padding:1.5rem; }
+#page-admin { animation: fadeIn 0.3s ease; }
+
+.admin-nav {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:1rem 1.8rem; border-bottom:1px solid rgba(249,168,37,0.2);
+  background:rgba(13,13,20,0.9); backdrop-filter:blur(12px);
+  position:sticky; top:0; z-index:100;
+}
+.admin-logo { display:flex; align-items:center; gap:0.6rem; font-size:1rem; font-weight:700; }
+.admin-logo-icon { width:30px; height:30px; border-radius:8px; background:linear-gradient(135deg,var(--admin),#f06292); display:flex; align-items:center; justify-content:center; font-size:0.9rem; }
+.admin-logo-text { color: var(--admin); }
+.admin-badge-nav { padding:0.25rem 0.65rem; border-radius:6px; background:rgba(249,168,37,0.15); border:1px solid rgba(249,168,37,0.3); color:var(--admin); font-size:0.72rem; font-weight:600; font-family:'JetBrains Mono',monospace; }
+
+.admin-body { padding:1.8rem; max-width:1000px; margin:0 auto; }
+
+.admin-header { margin-bottom:2rem; }
+.admin-header h2 { font-size:1.6rem; font-weight:700; letter-spacing:-0.03em; margin-bottom:0.3rem; }
+.admin-header p { color:var(--muted); font-size:0.85rem; }
+
+.admin-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1rem; margin-bottom:2rem; }
+.astat { background:var(--s1); border:1px solid rgba(249,168,37,0.2); border-radius:14px; padding:1.2rem; }
+.astat-lbl { font-size:0.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; margin-bottom:0.4rem; }
+.astat-val { font-family:'JetBrains Mono',monospace; font-size:2rem; font-weight:600; color:var(--admin); }
+
+.admin-section-title { font-size:0.8rem; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem; }
+.admin-section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+.user-table { width:100%; border-collapse:collapse; }
+.user-table th { font-size:0.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; padding:0.6rem 1rem; text-align:left; border-bottom:1px solid var(--border); }
+.user-table td { padding:0.85rem 1rem; border-bottom:1px solid var(--border); font-size:0.88rem; vertical-align:middle; }
+.user-table tr:last-child td { border-bottom:none; }
+.user-table tr:hover td { background:rgba(255,255,255,0.02); }
+.user-table-wrap { background:var(--s1); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+
+.u-name { display:flex; align-items:center; gap:0.6rem; }
+.u-avatar { width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,var(--a1),var(--a2)); display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; flex-shrink:0; }
+.u-chip { display:inline-flex; align-items:center; gap:0.3rem; padding:0.2rem 0.5rem; border-radius:6px; font-size:0.72rem; font-family:'JetBrains Mono',monospace; }
+.chip-img { background:rgba(240,98,146,0.12); color:var(--a2); border:1px solid rgba(240,98,146,0.25); }
+.chip-vid { background:rgba(38,208,160,0.1); color:var(--a3); border:1px solid rgba(38,208,160,0.2); }
+.chip-mb  { background:rgba(249,168,37,0.1); color:var(--a4); border:1px solid rgba(249,168,37,0.2); }
+
+.confirm-modal {
+  display:none; position:fixed; inset:0; z-index:2000; align-items:center; justify-content:center;
+  background:rgba(0,0,0,0.85); padding:1.5rem;
+}
+.confirm-modal.open { display:flex; }
+.confirm-box { background:var(--s1); border:1px solid var(--border); border-radius:18px; padding:2rem; max-width:360px; width:100%; text-align:center; }
+.confirm-icon { font-size:2.5rem; margin-bottom:1rem; }
+.confirm-title { font-size:1.1rem; font-weight:700; margin-bottom:0.5rem; }
+.confirm-sub { color:var(--muted); font-size:0.85rem; margin-bottom:1.5rem; }
+.confirm-actions { display:flex; gap:0.7rem; justify-content:center; }
+
+/* SPINNER */
+.spinner { display:inline-block; width:14px; height:14px; border:2px solid rgba(255,255,255,0.25); border-top-color:white; border-radius:50%; animation:spin 0.6s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width:5px; height:5px; }
+::-webkit-scrollbar-track { background:var(--bg); }
+::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+
+@media(max-width:600px) {
+  .vault-body, .admin-body { padding:1rem; }
+  .media-grid { grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); }
+  .card { padding:1.6rem; }
+}
+</style>
+</head>
+<body>
+<div class="bg-noise"></div>
+<div class="glow-top"></div>
+
+<!-- ======= LANDING ======= -->
+<div class="page page-center active" id="page-landing">
+  <div class="hero-badge">🔐 AES-256 · PBKDF2 · WebAuthn</div>
+  <h1 class="hero-title">Shaxsiy <span>Xazina</span></h1>
+  <p class="hero-sub">Rasmlaringiz va videolaringiz faqat sizniki. Hech kim — hatto biz ham — ko'ra olmaydi.</p>
+  <div class="hero-btns">
+    <button class="btn btn-primary" onclick="showPage('page-register')">Akkaunt yaratish</button>
+    <button class="btn btn-outline" onclick="showPage('page-login')">Kirish →</button>
+  </div>
+  <div class="feature-pills">
+    <div class="pill">🔒 AES-256 shifrlash</div>
+    <div class="pill">👆 Biometrika</div>
+    <div class="pill">🛡️ Zero-knowledge</div>
+    <div class="pill">⏱️ Auto-lock</div>
+    <div class="pill">📵 Server ko'rmaydi</div>
+  </div>
+  <div class="admin-entry">
+    <a class="admin-link" onclick="showPage('page-admin-login')">⚙️ Admin panel</a>
+  </div>
+</div>
+
+<!-- ======= REGISTER ======= -->
+<div class="page page-center" id="page-register">
+  <div class="card">
+    <button class="back-btn" onclick="showPage('page-landing')">← Orqaga</button>
+    <div class="card-title">Ro'yxatdan o'tish</div>
+    <div class="card-sub">Shaxsiy xazinangizni boshlang</div>
+    <div id="reg-alert"></div>
+    <div class="form-group">
+      <label class="label">Foydalanuvchi nomi</label>
+      <input class="input" type="text" id="reg-user" placeholder="noyob_nom" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label class="label">Parol</label>
+      <input class="input" type="password" id="reg-pass" placeholder="Kuchli parol kiriting" oninput="checkStr(this)">
+      <div class="strength-wrap" id="str-segs">
+        <div class="strength-seg"></div><div class="strength-seg"></div>
+        <div class="strength-seg"></div><div class="strength-seg"></div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="label">Parolni tasdiqlang</label>
+      <input class="input" type="password" id="reg-pass2" placeholder="Qaytadan kiriting">
+    </div>
+    <div class="divider">va</div>
+    <button class="bio-btn" id="reg-bio-btn" onclick="regBio()">👆 Biometrika ulash (ixtiyoriy)</button>
+    <button class="btn btn-primary btn-full" onclick="doRegister()">Akkaunt yaratish</button>
+    <div class="auth-link">Akkaunti bormi? <a onclick="showPage('page-login')">Kirish</a></div>
+  </div>
+</div>
+
+<!-- ======= LOGIN ======= -->
+<div class="page page-center" id="page-login">
+  <div class="card">
+    <button class="back-btn" onclick="showPage('page-landing')">← Orqaga</button>
+    <div class="card-title">Xush kelibsiz</div>
+    <div class="card-sub">Xazinangizga kiring</div>
+    <div id="login-alert"></div>
+    <div class="form-group">
+      <label class="label">Foydalanuvchi nomi</label>
+      <input class="input" type="text" id="login-user" placeholder="Foydalanuvchi nomingiz" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label class="label">Parol</label>
+      <input class="input" type="password" id="login-pass" placeholder="Parolingiz" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn btn-primary btn-full" style="margin-bottom:.8rem" onclick="doLogin()">Kirish</button>
+    <div class="divider">yoki</div>
+    <button class="bio-btn" id="login-bio-btn" style="margin-top:.8rem" onclick="loginBio()">👆 Biometrika bilan kirish</button>
+    <div class="auth-link">Akkaunt yo'qmi? <a onclick="showPage('page-register')">Ro'yxatdan o'ting</a></div>
+  </div>
+</div>
+
+<!-- ======= VAULT ======= -->
+<div class="page" id="page-vault">
+  <nav class="vault-nav">
+    <div class="nav-logo">
+      <div class="nav-logo-icon">🔐</div>
+      <span class="nav-logo-text">SecureVault</span>
+    </div>
+    <div class="nav-right">
+      <div class="user-chip">
+        <div class="user-avatar" id="nav-avatar">U</div>
+        <span id="nav-username">User</span>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">Chiqish</button>
+    </div>
+  </nav>
+  <div class="vault-body">
+    <div class="welcome-row">
+      <div class="welcome-text">
+        <h2 id="welcome-name">Salom!</h2>
+        <p>Xazinangiz himoyalangan <span class="badge badge-enc">AES-256</span> <span class="badge badge-bio" id="bio-badge" style="display:none">👆 Bio</span></p>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-lbl">Jami</div><div class="stat-val" id="s-total" style="color:var(--a1)">0</div></div>
+      <div class="stat-box"><div class="stat-lbl">Rasmlar</div><div class="stat-val" id="s-img" style="color:var(--a2)">0</div></div>
+      <div class="stat-box"><div class="stat-lbl">Videolar</div><div class="stat-val" id="s-vid" style="color:var(--a3)">0</div></div>
+      <div class="stat-box"><div class="stat-lbl">Hajm</div><div class="stat-val" id="s-size" style="color:var(--a4);font-size:1.2rem;line-height:1.8">0 MB</div></div>
+    </div>
+    <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()" ondragover="doDragOver(event)" ondragleave="doDragLeave(event)" ondrop="doDrop(event)">
+      <div class="drop-icon">📂</div>
+      <div class="drop-title">Rasm yoki video yuklash</div>
+      <div class="drop-sub">Bosing yoki shu yerga tashlang · JPG PNG GIF MP4 MOV WEBM</div>
+      <input type="file" id="file-input" multiple accept="image/*,video/*" onchange="handleFiles(this.files)">
+    </div>
+    <div class="filter-row">
+      <button class="ftag on" onclick="setFilter('all',this)">Hammasi</button>
+      <button class="ftag" onclick="setFilter('image',this)">🖼️ Rasmlar</button>
+      <button class="ftag" onclick="setFilter('video',this)">🎬 Videolar</button>
+    </div>
+    <div class="media-grid" id="media-grid"></div>
+  </div>
+</div>
+
+<!-- ======= LOCK SCREEN ======= -->
+<div class="page page-center" id="page-locked">
+  <div class="card" style="text-align:center">
+    <div style="font-size:2.8rem;margin-bottom:1rem">🔒</div>
+    <div class="card-title">Qulflandi</div>
+    <div class="card-sub" style="margin-bottom:1.5rem">5 daqiqa harakatsizlik. Qayta kiring.</div>
+    <div id="lock-alert"></div>
+    <div class="form-group" style="text-align:left">
+      <label class="label">Parol</label>
+      <input class="input" type="password" id="lock-pass" placeholder="Parolingiz" onkeydown="if(event.key==='Enter')unlockPass()">
+    </div>
+    <button class="btn btn-primary btn-full" style="margin-bottom:.8rem" onclick="unlockPass()">Ochish</button>
+    <button class="bio-btn" id="lock-bio-btn" onclick="unlockBio()">👆 Biometrika bilan ochish</button>
+  </div>
+</div>
+
+<!-- ======= ADMIN LOGIN ======= -->
+<div class="page page-center" id="page-admin-login">
+  <div class="card">
+    <button class="back-btn" onclick="showPage('page-landing')">← Orqaga</button>
+    <div style="text-align:center;margin-bottom:1.5rem">
+      <div style="font-size:2rem;margin-bottom:.6rem">⚙️</div>
+      <div class="card-title" style="color:var(--admin)">Admin Panel</div>
+      <div class="card-sub">Maxsus admin paroli bilan kiring</div>
+    </div>
+    <div id="admin-login-alert"></div>
+    <div class="form-group">
+      <label class="label">Admin paroli</label>
+      <input class="input" type="password" id="admin-pass-input" placeholder="Admin paroli" onkeydown="if(event.key==='Enter')doAdminLogin()">
+    </div>
+    <button class="btn btn-full" style="background:linear-gradient(135deg,var(--admin),#f06292);color:white;border:none;padding:.75rem;border-radius:11px;cursor:pointer;font-family:inherit;font-size:.9rem;font-weight:600" onclick="doAdminLogin()">Admin sifatida kirish</button>
+    <div style="margin-top:1rem;padding:.8rem;background:rgba(249,168,37,0.06);border:1px solid rgba(249,168,37,0.2);border-radius:10px;font-size:.78rem;color:var(--muted)">
+      💡 <strong style="color:var(--admin)">Default parol:</strong> <code style="font-family:'JetBrains Mono',monospace;color:var(--text)">Admin@1234</code><br>
+      <span style="margin-top:.3rem;display:block">⚠️ Ishlatishdan oldin kodni ochib parolni o'zgartiring!</span>
+    </div>
+  </div>
+</div>
+
+<!-- ======= ADMIN PANEL ======= -->
+<div class="page" id="page-admin">
+  <nav class="admin-nav">
+    <div class="admin-logo">
+      <div class="admin-logo-icon">⚙️</div>
+      <span class="admin-logo-text">Admin Panel</span>
+      <span class="admin-badge-nav">ADMIN</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:.8rem">
+      <button class="btn btn-sm btn-outline" onclick="refreshAdmin()">🔄 Yangilash</button>
+      <button class="btn btn-sm" style="background:rgba(239,83,80,0.15);color:var(--red);border:1px solid rgba(239,83,80,0.3)" onclick="exitAdmin()">Chiqish</button>
+    </div>
+  </nav>
+  <div class="admin-body">
+    <div class="admin-header">
+      <h2>Boshqaruv paneli</h2>
+      <p>Barcha foydalanuvchilar va statistika</p>
+    </div>
+    <div class="admin-stats" id="admin-stats"></div>
+    <div class="admin-section-title">Foydalanuvchilar ro'yxati</div>
+    <div class="user-table-wrap">
+      <table class="user-table">
+        <thead>
+          <tr>
+            <th>Foydalanuvchi</th>
+            <th>Rasmlar</th>
+            <th>Videolar</th>
+            <th>Hajm</th>
+            <th>Ro'yxatdan</th>
+            <th>Biometrika</th>
+            <th>Amal</th>
+          </tr>
+        </thead>
+        <tbody id="admin-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLb(event)">
+  <button class="lb-close" onclick="closeLb()">✕</button>
+  <img class="lb-img" id="lb-img" style="display:none">
+  <video class="lb-vid" id="lb-vid" controls style="display:none"></video>
+</div>
+
+<!-- PROGRESS TOAST -->
+<div class="progress-toast" id="prog-toast">
+  <div class="prog-row"><span id="prog-name">Yuklanmoqda...</span><span id="prog-pct">0%</span></div>
+  <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="confirm-modal" id="confirm-modal">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="confirm-icon">⚠️</div>
+    <div class="confirm-title" id="confirm-title">Tasdiqlang</div>
+    <div class="confirm-sub" id="confirm-sub">Bu amalni bajarmoqchimisiz?</div>
+    <div class="confirm-actions">
+      <button class="btn btn-outline btn-sm" onclick="closeConfirm()">Bekor</button>
+      <button class="btn btn-danger btn-sm" id="confirm-ok-btn" onclick="confirmOk()">O'chirish</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  ADMIN CONFIG — shu yerda parolni o'zgartiring!
+// ============================================================
+const ADMIN_PASSWORD = 'Admin@1234';
+// ============================================================
+
+// ===== CRYPTO =====
+async function deriveKey(password, salt) {
+  const enc = new TextEncoder();
+  const km = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name:'PBKDF2', salt, iterations:310000, hash:'SHA-256' },
+    km, { name:'AES-GCM', length:256 }, false, ['encrypt','decrypt']
+  );
+}
+async function aesEncrypt(data, password) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv   = crypto.getRandomValues(new Uint8Array(12));
+  const key  = await deriveKey(password, salt);
+  const plain= typeof data === 'string' ? new TextEncoder().encode(data) : data;
+  const ct   = await crypto.subtle.encrypt({ name:'AES-GCM', iv }, key, plain);
+  const out  = new Uint8Array(16 + 12 + ct.byteLength);
+  out.set(salt,0); out.set(iv,16); out.set(new Uint8Array(ct),28);
+  return btoa(String.fromCharCode(...out));
+}
+async function aesDecrypt(b64, password) {
+  try {
+    const d   = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+    const salt= d.slice(0,16), iv=d.slice(16,28), ct=d.slice(28);
+    const key = await deriveKey(password, salt);
+    return await crypto.subtle.decrypt({ name:'AES-GCM', iv }, key, ct);
+  } catch { return null; }
+}
+async function hashPw(pw) {
+  const salt= crypto.getRandomValues(new Uint8Array(16));
+  const enc = new TextEncoder();
+  const km  = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveKey']);
+  const dk  = await crypto.subtle.deriveKey(
+    { name:'PBKDF2', salt, iterations:310000, hash:'SHA-256' },
+    km, { name:'AES-GCM', length:256 }, true, ['encrypt']
+  );
+  const raw = await crypto.subtle.exportKey('raw', dk);
+  const sH  = [...salt].map(b=>b.toString(16).padStart(2,'0')).join('');
+  const kH  = [...new Uint8Array(raw)].map(b=>b.toString(16).padStart(2,'0')).join('');
+  return sH + ':' + kH;
+}
+async function verifyPw(pw, stored) {
+  const [sH, kH] = stored.split(':');
+  const salt = new Uint8Array(sH.match(/.{2}/g).map(h=>parseInt(h,16)));
+  const enc  = new TextEncoder();
+  const km   = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveKey']);
+  const dk   = await crypto.subtle.deriveKey(
+    { name:'PBKDF2', salt, iterations:310000, hash:'SHA-256' },
+    km, { name:'AES-GCM', length:256 }, true, ['encrypt']
+  );
+  const raw  = await crypto.subtle.exportKey('raw', dk);
+  const newH = [...new Uint8Array(raw)].map(b=>b.toString(16).padStart(2,'0')).join('');
+  return newH === kH;
+}
+async function makeVaultKey(pw, uname) {
+  const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw+'::'+uname+'::sv2025'));
+  return [...new Uint8Array(d)].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+// ===== WEBAUTHN =====
+const hasBio = () => !!window.PublicKeyCredential;
+const b2b = b64 => Uint8Array.from(atob(b64.replace(/-/g,'+').replace(/_/g,'/')), c=>c.charCodeAt(0)).buffer;
+const ab2b = ab => btoa(String.fromCharCode(...new Uint8Array(ab))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+
+async function regBio() {
+  if (!hasBio()) { showAlert('reg-alert','Biometrika mavjud emas','err'); return; }
+  const u = document.getElementById('reg-user').value.trim();
+  if (!u) { showAlert('reg-alert','Avval foydalanuvchi nomini kiriting','err'); return; }
+  try {
+    const ch = crypto.getRandomValues(new Uint8Array(32));
+    const uid = crypto.getRandomValues(new Uint8Array(16));
+    const cred = await navigator.credentials.create({ publicKey:{
+      challenge:ch, rp:{name:'SecureVault', id: location.hostname||'localhost'},
+      user:{id:uid, name:u, displayName:u},
+      pubKeyCredParams:[{alg:-7,type:'public-key'},{alg:-257,type:'public-key'}],
+      authenticatorSelection:{userVerification:'required'}, timeout:60000
+    }});
+    sessionStorage.setItem('bio_pending_'+u, JSON.stringify({id:cred.id,rawId:ab2b(cred.rawId)}));
+    const btn=document.getElementById('reg-bio-btn');
+    btn.textContent='✅ Biometrika ulandi!'; btn.classList.add('linked');
+    showAlert('reg-alert','Biometrika muvaffaqiyatli ulandi!','ok');
+  } catch(e){ showAlert('reg-alert','Xato: '+e.message,'err'); }
+}
+
+async function bioAuth(uname, alertId) {
+  if (!hasBio()) { showAlert(alertId,'Biometrika mavjud emas','err'); return false; }
+  const users = getUsers();
+  if (!users[uname]?.biometricId) { showAlert(alertId,'Bu akkauntda biometrika yo\'q','err'); return false; }
+  try {
+    const ch = crypto.getRandomValues(new Uint8Array(32));
+    const assertion = await navigator.credentials.get({ publicKey:{
+      challenge:ch,
+      allowCredentials:[{id:b2b(users[uname].biometricId), type:'public-key'}],
+      userVerification:'required', timeout:60000
+    }});
+    return !!assertion;
+  } catch(e){ showAlert(alertId,'Biometrika xatosi: '+e.message,'err'); return false; }
+}
+
+// ===== USER STORE =====
+const getUsers = () => JSON.parse(localStorage.getItem('sv_users')||'{}');
+const saveUsers = u => localStorage.setItem('sv_users', JSON.stringify(u));
+
+// ===== STATE =====
+let CU=null, CP=null, media=[], filt='all', lockTimer=null;
+
+// ===== REGISTER =====
+async function doRegister() {
+  const uname= document.getElementById('reg-user').value.trim();
+  const pw   = document.getElementById('reg-pass').value;
+  const pw2  = document.getElementById('reg-pass2').value;
+  clearAlert('reg-alert');
+  if (!uname) return showAlert('reg-alert','Foydalanuvchi nomini kiriting','err');
+  if (uname.length<3) return showAlert('reg-alert','Nom kamida 3 ta harf bo\'lishi kerak','err');
+  if (!pw) return showAlert('reg-alert','Parol kiriting','err');
+  if (pw.length<6) return showAlert('reg-alert','Parol kamida 6 ta belgi','err');
+  if (pw!==pw2) return showAlert('reg-alert','Parollar mos emas','err');
+  const users=getUsers();
+  if (users[uname]) return showAlert('reg-alert','Bu nom band','err');
+
+  const btn=document.querySelector('#page-register .btn-primary');
+  btn.innerHTML='<span class="spinner"></span> Yaratilmoqda...'; btn.disabled=true;
+  try {
+    const pwHash = await hashPw(pw);
+    const vk     = await makeVaultKey(pw, uname);
+    const ud = { username:uname, pwHash, vaultKey:vk, biometricId:null, created:Date.now() };
+    const pending = sessionStorage.getItem('bio_pending_'+uname);
+    if (pending) { ud.biometricId=JSON.parse(pending).rawId; sessionStorage.removeItem('bio_pending_'+uname); }
+    users[uname]=ud; saveUsers(users);
+    localStorage.setItem('sv_vault_'+uname, await aesEncrypt(JSON.stringify([]), vk));
+    showAlert('reg-alert','Akkaunt yaratildi!','ok');
+    setTimeout(()=>{ CU=uname; CP=vk; openVault(); }, 900);
+  } catch(e){ showAlert('reg-alert','Xato: '+e.message,'err'); }
+  finally { btn.innerHTML='Akkaunt yaratish'; btn.disabled=false; }
+}
+
+// ===== LOGIN =====
+async function doLogin() {
+  const uname=document.getElementById('login-user').value.trim();
+  const pw   =document.getElementById('login-pass').value;
+  clearAlert('login-alert');
+  if (!uname||!pw) return showAlert('login-alert','Ma\'lumotlarni to\'ldiring','err');
+  const btn=document.querySelector('#page-login .btn-primary');
+  btn.innerHTML='<span class="spinner"></span>'; btn.disabled=true;
+  try {
+    const users=getUsers();
+    if (!users[uname]) return showAlert('login-alert','Noto\'g\'ri nom yoki parol','err');
+    const ok=await verifyPw(pw, users[uname].pwHash);
+    if (!ok) return showAlert('login-alert','Noto\'g\'ri nom yoki parol','err');
+    CU=uname; CP=users[uname].vaultKey;
+    await openVault();
+  } finally { btn.innerHTML='Kirish'; btn.disabled=false; }
+}
+
+async function loginBio() {
+  const uname=document.getElementById('login-user').value.trim();
+  if (!uname) return showAlert('login-alert','Avval foydalanuvchi nomini kiriting','err');
+  const ok=await bioAuth(uname,'login-alert');
+  if (ok) { CU=uname; CP=getUsers()[uname].vaultKey; await openVault(); }
+}
+
+// ===== VAULT =====
+async function openVault() {
+  const enc=localStorage.getItem('sv_vault_'+CU);
+  if (enc) {
+    const dec=await aesDecrypt(enc, CP);
+    media = dec ? JSON.parse(new TextDecoder().decode(dec)) : [];
+  } else media=[];
+  const users=getUsers();
+  document.getElementById('nav-avatar').textContent=CU[0].toUpperCase();
+  document.getElementById('nav-username').textContent=CU;
+  document.getElementById('welcome-name').textContent='Salom, '+CU+' 👋';
+  document.getElementById('bio-badge').style.display=users[CU]?.biometricId?'inline-flex':'none';
+  showPage('page-vault');
+  renderMedia();
+  startLockTimer();
+}
+
+async function saveVault() {
+  const enc=await aesEncrypt(JSON.stringify(media), CP);
+  localStorage.setItem('sv_vault_'+CU, enc);
+  // update size meta for admin
+  const users=getUsers();
+  if (users[CU]) {
+    const totalSize=media.reduce((a,m)=>a+(m.size||0),0);
+    users[CU]._meta={ imgs:media.filter(m=>m.type==='image').length, vids:media.filter(m=>m.type==='video').length, size:totalSize };
+    saveUsers(users);
+  }
+}
+
+function doLogout() { media=[]; CU=null; CP=null; stopLockTimer(); showPage('page-landing'); }
+
+// ===== LOCK =====
+function startLockTimer() {
+  stopLockTimer();
+  lockTimer=setTimeout(lockVault, 5*60*1000);
+  ['mousemove','keydown','click','touchstart'].forEach(e=>document.addEventListener(e,resetLockTimer,{passive:true}));
+}
+function resetLockTimer() { stopLockTimer(); lockTimer=setTimeout(lockVault,5*60*1000); }
+function stopLockTimer() {
+  if(lockTimer)clearTimeout(lockTimer);
+  ['mousemove','keydown','click','touchstart'].forEach(e=>document.removeEventListener(e,resetLockTimer));
+}
+function lockVault() {
+  stopLockTimer(); showPage('page-locked');
+  const hasBioReg=getUsers()[CU]?.biometricId;
+  document.getElementById('lock-bio-btn').style.display=hasBioReg?'flex':'none';
+}
+async function unlockPass() {
+  const pw=document.getElementById('lock-pass').value;
+  clearAlert('lock-alert');
+  if (!pw) return showAlert('lock-alert','Parol kiriting','err');
+  const ok=await verifyPw(pw, getUsers()[CU].pwHash);
+  if (!ok) return showAlert('lock-alert','Noto\'g\'ri parol','err');
+  document.getElementById('lock-pass').value='';
+  await openVault();
+}
+async function unlockBio() {
+  const ok=await bioAuth(CU,'lock-alert');
+  if (ok) await openVault();
+}
+
+// ===== FILE UPLOAD =====
+function doDragOver(e){ e.preventDefault(); document.getElementById('drop-zone').classList.add('over'); }
+function doDragLeave(){ document.getElementById('drop-zone').classList.remove('over'); }
+function doDrop(e){ e.preventDefault(); document.getElementById('drop-zone').classList.remove('over'); handleFiles(e.dataTransfer.files); }
+
+async function handleFiles(files) {
+  if (!files||!files.length) return;
+  const toast=document.getElementById('prog-toast'),
+        fill =document.getElementById('prog-fill'),
+        name =document.getElementById('prog-name'),
+        pct  =document.getElementById('prog-pct');
+  toast.style.display='block'; let done=0;
+  for (const f of files) {
+    const type=f.type.startsWith('image/')?'image':f.type.startsWith('video/')?'video':null;
+    if (!type) continue;
+    name.textContent=f.name.substring(0,28)+(f.name.length>28?'...':'');
+    fill.style.width=Math.round(done/files.length*100)+'%';
+    pct.textContent=Math.round(done/files.length*100)+'%';
+    try {
+      const ab=await f.arrayBuffer();
+      const enc=await aesEncrypt(new Uint8Array(ab), CP);
+      media.push({ id:crypto.randomUUID(), name:f.name, type, mimeType:f.type, size:f.size, encData:enc, created:Date.now() });
+      done++;
+    } catch(e){ console.error(e); }
+  }
+  await saveVault();
+  fill.style.width='100%'; pct.textContent='100%';
+  setTimeout(()=>{ toast.style.display='none'; fill.style.width='0%'; },1400);
+  document.getElementById('file-input').value='';
+  renderMedia();
+}
+
+// ===== RENDER =====
+function renderMedia() {
+  const grid=document.getElementById('media-grid');
+  const items=filt==='all'?media:media.filter(m=>m.type===filt);
+  const imgs=media.filter(m=>m.type==='image').length;
+  const vids=media.filter(m=>m.type==='video').length;
+  const sz=media.reduce((a,m)=>a+(m.size||0),0);
+  document.getElementById('s-total').textContent=media.length;
+  document.getElementById('s-img').textContent=imgs;
+  document.getElementById('s-vid').textContent=vids;
+  document.getElementById('s-size').textContent=fmtSz(sz);
+  if (!items.length) {
+    grid.innerHTML=`<div class="empty"><div class="empty-ico">${filt==='video'?'🎬':filt==='image'?'🖼️':'🗂️'}</div><p>Hozircha fayl yo'q</p></div>`;
+    return;
+  }
+  grid.innerHTML=items.map(m=>`
+    <div class="m-card" onclick="openMedia('${m.id}')">
+      <div class="m-placeholder" id="pt-${m.id}">${m.type==='video'?'🎬':'🖼️'}</div>
+      <div class="m-info">
+        <div class="m-name" title="${esc(m.name)}">${esc(m.name)}</div>
+        <div class="m-meta">${fmtSz(m.size)} · ${fmtDt(m.created)}</div>
+      </div>
+      <button class="m-del" onclick="delMedia(event,'${m.id}')">✕</button>
+    </div>`).join('');
+  items.filter(m=>m.type==='image').forEach(m=>decThumb(m));
+}
+
+async function decThumb(item) {
+  const dec=await aesDecrypt(item.encData, CP);
+  if (!dec) return;
+  const url=URL.createObjectURL(new Blob([dec],{type:item.mimeType}));
+  const el=document.getElementById('pt-'+item.id);
+  if (el) el.innerHTML=`<img class="m-thumb" src="${url}" onload="URL.revokeObjectURL(this.src)">`;
+}
+
+async function openMedia(id) {
+  const m=media.find(x=>x.id===id); if (!m) return;
+  const dec=await aesDecrypt(m.encData, CP); if (!dec) return;
+  const url=URL.createObjectURL(new Blob([dec],{type:m.mimeType}));
+  const lb=document.getElementById('lightbox'),
+        img=document.getElementById('lb-img'),
+        vid=document.getElementById('lb-vid');
+  img.style.display='none'; vid.style.display='none';
+  if (m.type==='image'){ img.src=url; img.style.display='block'; }
+  else { vid.src=url; vid.style.display='block'; }
+  lb._url=url; lb.classList.add('open');
+}
+
+function closeLb(e) {
+  if (e&&e.target!==document.getElementById('lightbox')&&!e.target.classList.contains('lb-close'))return;
+  const lb=document.getElementById('lightbox');
+  lb.classList.remove('open');
+  document.getElementById('lb-vid').pause(); document.getElementById('lb-vid').src='';
+  document.getElementById('lb-img').src='';
+  if (lb._url){ URL.revokeObjectURL(lb._url); lb._url=null; }
+}
+
+// confirm pattern
+let _confirmCb=null;
+function showConfirm(title,sub,icon,cb){
+  document.getElementById('confirm-title').textContent=title;
+  document.getElementById('confirm-sub').textContent=sub;
+  document.getElementById('confirm-icon').textContent=icon;
+  _confirmCb=cb;
+  document.getElementById('confirm-modal').classList.add('open');
+}
+function closeConfirm(){ document.getElementById('confirm-modal').classList.remove('open'); _confirmCb=null; }
+function confirmOk(){ if(_confirmCb)_confirmCb(); closeConfirm(); }
+
+async function delMedia(e,id) {
+  e.stopPropagation();
+  showConfirm('Faylni o\'chirish?','Bu amalni qaytarib bo\'lmaydi.','🗑️', async()=>{
+    media=media.filter(m=>m.id!==id);
+    await saveVault();
+    renderMedia();
+  });
+}
+
+function setFilter(t,btn){ filt=t; document.querySelectorAll('.ftag').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); renderMedia(); }
+
+// ===== ADMIN =====
+function doAdminLogin() {
+  const pw=document.getElementById('admin-pass-input').value;
+  clearAlert('admin-login-alert');
+  if (!pw) return showAlert('admin-login-alert','Parol kiriting','err');
+  if (pw!==ADMIN_PASSWORD) return showAlert('admin-login-alert','Noto\'g\'ri parol','err');
+  document.getElementById('admin-pass-input').value='';
+  loadAdminPanel();
+  showPage('page-admin');
+}
+
+function loadAdminPanel() {
+  const users=getUsers();
+  const uList=Object.values(users);
+  const totalUsers=uList.length;
+  let totalFiles=0, totalImgs=0, totalVids=0, totalSize=0;
+  uList.forEach(u=>{
+    const m=u._meta||{};
+    totalFiles+=(m.imgs||0)+(m.vids||0);
+    totalImgs+=(m.imgs||0); totalVids+=(m.vids||0);
+    totalSize+=(m.size||0);
+  });
+  document.getElementById('admin-stats').innerHTML=`
+    <div class="astat"><div class="astat-lbl">Foydalanuvchilar</div><div class="astat-val">${totalUsers}</div></div>
+    <div class="astat"><div class="astat-lbl">Jami fayllar</div><div class="astat-val" style="color:var(--a2)">${totalFiles}</div></div>
+    <div class="astat"><div class="astat-lbl">Rasmlar</div><div class="astat-val" style="color:var(--a2)">${totalImgs}</div></div>
+    <div class="astat"><div class="astat-lbl">Videolar</div><div class="astat-val" style="color:var(--a3)">${totalVids}</div></div>
+    <div class="astat"><div class="astat-lbl">Umumiy hajm</div><div class="astat-val" style="color:var(--a4);font-size:1.4rem;line-height:2">${fmtSz(totalSize)}</div></div>
+  `;
+
+  if (!uList.length) {
+    document.getElementById('admin-table-body').innerHTML=`<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem">Hozircha foydalanuvchi yo'q</td></tr>`;
+    return;
+  }
+
+  document.getElementById('admin-table-body').innerHTML=uList.map(u=>{
+    const m=u._meta||{};
+    const imgs=m.imgs||0, vids=m.vids||0, sz=m.size||0;
+    const dt=new Date(u.created).toLocaleDateString('uz-UZ');
+    return `<tr>
+      <td><div class="u-name"><div class="u-avatar">${u.username[0].toUpperCase()}</div>${esc(u.username)}</div></td>
+      <td><span class="u-chip chip-img">🖼️ ${imgs}</span></td>
+      <td><span class="u-chip chip-vid">🎬 ${vids}</span></td>
+      <td><span class="u-chip chip-mb">📦 ${fmtSz(sz)}</span></td>
+      <td style="color:var(--muted);font-size:.8rem">${dt}</td>
+      <td>${u.biometricId?'<span style="color:var(--a3);font-size:.8rem">✅ Ha</span>':'<span style="color:var(--muted);font-size:.8rem">— Yo\'q</span>'}</td>
+      <td><button class="btn btn-sm btn-danger" onclick="adminDelUser('${esc(u.username)}')">O'chirish</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function adminDelUser(uname) {
+  showConfirm(
+    `"${uname}" ni o'chirish?`,
+    'Bu foydalanuvchi va barcha uning fayllari o\'chiriladi. Qaytarib bo\'lmaydi!',
+    '⚠️',
+    ()=>{
+      const users=getUsers();
+      delete users[uname];
+      saveUsers(users);
+      localStorage.removeItem('sv_vault_'+uname);
+      loadAdminPanel();
+    }
+  );
+}
+
+function refreshAdmin() { loadAdminPanel(); }
+function exitAdmin() { showPage('page-landing'); }
+
+// ===== UTILS =====
+function showPage(id){ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+function showAlert(id,msg,type){ const el=document.getElementById(id); if(!el)return; el.textContent=msg; el.className='alert '+type; }
+function clearAlert(id){ const el=document.getElementById(id); if(el){el.textContent='';el.className='';} }
+function fmtSz(b){ if(!b)return'0 B'; if(b<1024)return b+' B'; if(b<1048576)return(b/1024).toFixed(1)+' KB'; return(b/1048576).toFixed(1)+' MB'; }
+function fmtDt(ts){ return new Date(ts).toLocaleDateString('uz-UZ'); }
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function checkStr(input) {
+  const v=input.value; let s=0;
+  if(v.length>=8)s++; if(/[A-Z]/.test(v))s++; if(/[0-9]/.test(v))s++; if(/[^A-Za-z0-9]/.test(v))s++;
+  const cols=['#ef5350','#ffa726','#66bb6a','#26d0a0'];
+  document.querySelectorAll('.strength-seg').forEach((seg,i)=>{ seg.style.background=i<s?(cols[s-1]||'#26d0a0'):'var(--border)'; });
+}
+
+if (!hasBio()) {
+  ['reg-bio-btn','login-bio-btn'].forEach(id=>{ const b=document.getElementById(id); if(b){b.textContent='👆 Biometrika mavjud emas'; b.classList.add('disabled');} });
+}
+
+document.addEventListener('contextmenu', e=>{ if(['IMG','VIDEO'].includes(e.target.tagName))e.preventDefault(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape')closeLb({target:document.getElementById('lightbox')}); });
+</script>
+</body>
+</html>
